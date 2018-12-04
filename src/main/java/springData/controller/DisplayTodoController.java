@@ -47,17 +47,7 @@ public class DisplayTodoController {
 		OrganizerUser user = userRepository.findByLogin(authUser.getUsername()); // fetch the user from the database.
 		String currentUserRole = user.getRole().getRole();
 		List<Todo> todos = new ArrayList<>();
-		switch (currentUserRole){
-			case "MANAGER":
-				List<Organizer> organizers = (List<Organizer>) organizerRepository.findAll();
-				for(Organizer o : organizers){
-					todos.addAll(o.getTodos());
-				}
-				break;
-			case "ASSISTANT":
-				todos.addAll((List<Todo>)todoRepository.findAll());
-				break;
-		}
+		populateTodoForUser(currentUserRole, todos);
 
 		if (todos.isEmpty()) {
 			return "NoTodo";
@@ -73,7 +63,25 @@ public class DisplayTodoController {
 		OrganizerUser user = userRepository.findByLogin(authUser.getUsername()); // fetch the user from the database.
 		String currentUserRole = user.getRole().getRole();
 		List<Todo> todos = new ArrayList<>();
+		populateTodoForUser(currentUserRole, todos);
+		Todo t = null;
+		try {
+			t = todos.stream().max(Comparator.comparing(Todo::getPriority)).orElseThrow(Exception::new);
+		} catch (Exception e) {
+			return "NoTodo";
+		}
+		model.addAttribute("todo", t);
+		return "NextTodo";
+	}
 
+
+	/**
+	 * Populates the passed in list with todos based on the current Users role.
+	 * @param currentUserRole
+	 * @param todos
+	 */
+
+	private void populateTodoForUser(String currentUserRole, List<Todo> todos) {
 		switch (currentUserRole){
 			case "MANAGER":
 				List<Organizer> organizers = (List<Organizer>) organizerRepository.findAll();
@@ -85,15 +93,6 @@ public class DisplayTodoController {
 				todos.addAll((List<Todo>)todoRepository.findAll());
 				break;
 		}
-
-		Todo t = null;
-		try {
-			t = todos.stream().max(Comparator.comparing(Todo::getPriority)).orElseThrow(Exception::new);
-		} catch (Exception e) {
-			return "NoTodo";
-		}
-		model.addAttribute("todo", t);
-		return "NextTodo";
 	}
 
 }

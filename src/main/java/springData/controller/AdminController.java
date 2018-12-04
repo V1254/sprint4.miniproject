@@ -1,6 +1,7 @@
 package springData.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,6 +12,8 @@ import springData.domain.OrganizerUser;
 import springData.domain.Role;
 import springData.repository.RoleRepository;
 import springData.repository.UserRepository;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/admin")
@@ -34,11 +37,13 @@ public class AdminController {
 	}
 
 	@RequestMapping(value = "/create", params = "add", method = RequestMethod.POST)
-	public String addNewUser(@RequestParam("roleName") String roleName, @ModelAttribute("orgUser") OrganizerUser u, BindingResult result, Model model) {
+	public String addNewUser(@RequestParam("roleName") String roleName, @Valid @ModelAttribute("orgUser") OrganizerUser u, BindingResult result, Model model) {
 		if (result.hasErrors()) {
 			return "admin/CreateUser";
 		}
+		BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
 		Role role = roleRepository.findByRole(roleName);
+		u.setPassword(pe.encode(u.getPassword()));
 		u.setRole(role);
 		userRepository.save(u);
 

@@ -46,11 +46,17 @@ public class OrganizerApp implements CommandLineRunner  {
 		adminUser.setPassword(pe.encode("admin"));
 		adminUser.setRole(adminRole);
 
+		OrganizerUser secondUser = new OrganizerUser();
+		secondUser.setLogin("manager");
+		secondUser.setPassword(pe.encode("manager"));
+		secondUser.setRole(managerRole);
+
 		// saves admin role
 		userRepository.save(adminUser);
+		userRepository.save(secondUser);
 
 		// saving manually
-		roleRepository.save(managerRole);
+//		roleRepository.save(managerRole);
 		roleRepository.save(assistantRole);
 	}
 }

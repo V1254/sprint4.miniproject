@@ -29,6 +29,8 @@ public class OrganizerUserValidator implements Validator {
 			errors.rejectValue("login", "", "User with that username already exists.");
 		}
 
+
+
 	}
 
 }

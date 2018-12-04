@@ -43,11 +43,10 @@ public class DisplayTodoController {
 
 	@RequestMapping("/list")
 	public String listTodos(Model model) {
-		User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); // fetches the current User
+		User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		OrganizerUser user = userRepository.findByLogin(authUser.getUsername()); // fetch the user from the database.
-		String currentUserRole = user.getRole().getRole();
 		List<Todo> todos = new ArrayList<>();
-		populateTodoForUser(currentUserRole, todos);
+		populateTodoForUser(user, todos);
 
 		if (todos.isEmpty()) {
 			return "NoTodo";
@@ -61,9 +60,8 @@ public class DisplayTodoController {
 	public String next(Model model) {
 		User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); // fetches the current User
 		OrganizerUser user = userRepository.findByLogin(authUser.getUsername()); // fetch the user from the database.
-		String currentUserRole = user.getRole().getRole();
 		List<Todo> todos = new ArrayList<>();
-		populateTodoForUser(currentUserRole, todos);
+		populateTodoForUser(user, todos);
 		Todo t = null;
 		try {
 			t = todos.stream().max(Comparator.comparing(Todo::getPriority)).orElseThrow(Exception::new);
@@ -77,20 +75,20 @@ public class DisplayTodoController {
 
 	/**
 	 * Populates the passed in list with todos based on the current Users role.
-	 * @param currentUserRole
+	 * @param user
 	 * @param todos
 	 */
 
-	private void populateTodoForUser(String currentUserRole, List<Todo> todos) {
-		switch (currentUserRole){
+	private void populateTodoForUser(OrganizerUser user, List<Todo> todos) {
+		switch (user.getRole().getRole()){
 			case "MANAGER":
-				List<Organizer> organizers = (List<Organizer>) organizerRepository.findAll();
+				List<Organizer> organizers = organizerRepository.findByOwner(user);
 				for(Organizer o : organizers){
 					todos.addAll(o.getTodos());
 				}
 				break;
 			case "ASSISTANT":
-				todos.addAll((List<Todo>)todoRepository.findAll());
+				todos.addAll((List<Todo>) todoRepository.findAll());
 				break;
 		}
 	}

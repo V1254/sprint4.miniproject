@@ -2,11 +2,7 @@ package springData.domain;
 
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="roles")
@@ -17,7 +13,7 @@ public class Role {
 	@Column(nullable=false)
 	private String role;
 
-	@OneToMany(mappedBy="role")
+	@OneToMany(mappedBy="role", cascade= CascadeType.ALL)
 	private Set<OrganizerUser> users;
 	
 	// HIBERNATE CONSTRAINT:

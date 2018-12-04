@@ -29,7 +29,7 @@ public class OrganizerUser {
 	@Transient
 	String password2;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.EAGER)
 	private Role role;
 	
 	@OneToMany(mappedBy="owner",cascade=CascadeType.ALL)

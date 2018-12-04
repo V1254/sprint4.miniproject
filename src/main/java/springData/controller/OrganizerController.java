@@ -20,6 +20,7 @@ import springData.domain.Organizer;
 import springData.domain.OrganizerUser;
 import springData.domain.Todo;
 import springData.repository.OrganizerRepository;
+import springData.repository.TodoRepository;
 import springData.repository.UserRepository;
 
 import java.util.List;
@@ -33,6 +34,9 @@ public class OrganizerController {
 
 	@Autowired
 	OrganizerRepository organizerRepository;
+
+	@Autowired
+	TodoRepository todoRepository;
 
 	@InitBinder
 	protected void initBinder(WebDataBinder binder) {
@@ -49,26 +53,21 @@ public class OrganizerController {
 	public String addNewTodo(@Valid @ModelAttribute("todo") Todo t, BindingResult result, Model model) {
 		if (result.hasErrors()) {
 			return "CreateTodo";
-		} else {
-			User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			OrganizerUser currentUser = userRepository.findByLogin(authUser.getUsername());
-			List<Organizer> organizers = currentUser.getOrganizers();
-			if(organizers.isEmpty()){
-				Organizer o = new Organizer();
-				o.setOwner(currentUser);
-				organizers.add(o);
-			}
-
-			Organizer toAddTo = organizers.get(0);
-			toAddTo.addTodo(t);
-			organizerRepository.save(toAddTo);
-			userRepository.save(currentUser);
-
-
-
-//			OrganizerApp.organizer.addTodo(t);
-			return "redirect:/list";
 		}
+		OrganizerUser currentUser = getCurrentUser();
+		List<Organizer> organizers = currentUser.getOrganizers();
+		if (organizers.isEmpty()) {
+			Organizer o = new Organizer();
+			o.setOwner(currentUser);
+			organizers.add(o);
+		}
+
+		Organizer toAddTo = organizers.get(0);
+		toAddTo.addTodo(t);
+		organizerRepository.save(toAddTo);
+		userRepository.save(currentUser);
+		return "redirect:/list";
+
 	}
 
 	@RequestMapping(value = "create", params = "cancel", method = RequestMethod.POST)
@@ -78,7 +77,21 @@ public class OrganizerController {
 
 	@RequestMapping(value = "delete", params = "id", method = RequestMethod.GET)
 	public String deleteTodo(@RequestParam("id") int id) {
-		OrganizerApp.organizer.deleteTodo(id);
+		OrganizerUser currentUser = getCurrentUser();
+		List<Organizer> organizers = currentUser.getOrganizers();
+
+		Todo t = todoRepository.findById(id);
+		// remove from the organizer first.
+		if(t != null){
+			Organizer organizer = organizers.stream().filter(o -> o.getTodos().contains(t)).findFirst().get(); // will always be present if a todo exists.
+			organizer.getTodos().remove(t);
+		}
+		userRepository.save(currentUser);
 		return "redirect:/list";
+	}
+
+	private OrganizerUser getCurrentUser(){
+		User authUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return userRepository.findByLogin(authUser.getUsername());
 	}
 }

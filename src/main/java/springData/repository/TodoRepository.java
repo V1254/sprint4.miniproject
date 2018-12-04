@@ -8,6 +8,6 @@ import springData.domain.Todo;
 
 public interface TodoRepository extends CrudRepository<Todo, Integer> {
     List<Todo> findByTask(String task);
-    
+    Todo findById(int id);
     List<Todo> findByDescription(String description);
 }

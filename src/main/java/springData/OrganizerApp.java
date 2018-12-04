@@ -19,7 +19,6 @@ public class OrganizerApp implements CommandLineRunner  {
 	/**
 	 * An organizer object for everyone to use.
 	 */
-	public static Organizer organizer = new Organizer();
 
 	@Autowired
 	RoleRepository roleRepository;
@@ -37,7 +36,7 @@ public class OrganizerApp implements CommandLineRunner  {
 		
 		// TODO Task
 		BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
-		Role adminRole = new Role(0,"ADMIN"); // saved automatically by assigning role.
+		Role adminRole = new Role(0,"ADMIN"); // saved automatically by assigning role to the admin USer.
 		Role managerRole = new Role(1,"MANAGER");
 		Role assistantRole = new Role(2,"ASSISTANT");
 
@@ -46,17 +45,11 @@ public class OrganizerApp implements CommandLineRunner  {
 		adminUser.setPassword(pe.encode("admin"));
 		adminUser.setRole(adminRole);
 
-		OrganizerUser secondUser = new OrganizerUser();
-		secondUser.setLogin("manager");
-		secondUser.setPassword(pe.encode("manager"));
-		secondUser.setRole(managerRole);
-
 		// saves admin role
 		userRepository.save(adminUser);
-		userRepository.save(secondUser);
 
 		// saving manually
-//		roleRepository.save(managerRole);
+		roleRepository.save(managerRole);
 		roleRepository.save(assistantRole);
 	}
 }
